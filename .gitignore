@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Environment variables (JANGAN di-commit!)
+.env
+
+# Database & memory (data user, privat)
+memory/
+
+# Workspace sandbox user (data privat)
+Workspaces/
+
+# Log files
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Temp files
+*.tmp
+temp/

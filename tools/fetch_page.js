@@ -19,6 +19,9 @@ export const FetchPageTool = new DynamicStructuredTool({
         return "❌ TAVILY_API_KEY belum di-set di .env. Tambahkan dulu API key Tavily yang valid sebelum pakai fetch_page.";
       }
 
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
       const response = await fetch("https://api.tavily.com/extract", {
         method : "POST",
         headers: {
@@ -26,7 +29,8 @@ export const FetchPageTool = new DynamicStructuredTool({
           "Authorization": `Bearer ${TAVILY_KEY()}`,
         },
         body: JSON.stringify({ urls: [url] }),
-      });
+        signal: controller.signal
+      }).finally(() => clearTimeout(timeout));
 
       if (!response.ok)
         return `❌ Tavily Extract Error ${response.status}: ${response.statusText}`;

@@ -39,7 +39,10 @@ export const SearchWebTool = new DynamicStructuredTool({
         "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
       };
 
-      const res = await fetch(ddgUrl, { headers });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
+      const res = await fetch(ddgUrl, { headers, signal: controller.signal }).finally(() => clearTimeout(timeout));
       if (res.ok) {
         const html = await res.text();
         const results = [];
@@ -70,7 +73,9 @@ export const SearchWebTool = new DynamicStructuredTool({
 
       // Fallback Method 2: Wikipedia Search API
       const wikiUrl = `https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&utf8=1`;
-      const wikiRes = await fetch(wikiUrl);
+      const wikiController = new AbortController();
+      const wikiTimeout = setTimeout(() => wikiController.abort(), 15000);
+      const wikiRes = await fetch(wikiUrl, { signal: wikiController.signal }).finally(() => clearTimeout(wikiTimeout));
       if (wikiRes.ok) {
         const wikiData = await wikiRes.json();
         const searchHits = wikiData?.query?.search || [];

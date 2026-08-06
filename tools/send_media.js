@@ -40,27 +40,34 @@ export const sendMediaTool = new DynamicStructuredTool({
         }
       }
 
+      // Timeout wrapper to prevent hanging
+      const withTimeout = (promise, ms = 30000) => {
+        let timeoutId;
+        const timeoutPromise = new Promise((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error("Request timed out (30s)")), ms);
+        });
+        return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+      };
+
       if (type === "image") {
-        await bot.telegram.sendPhoto(chatId, source, { caption, parse_mode: "Markdown" });
+        await withTimeout(bot.telegram.sendPhoto(chatId, source, { caption, parse_mode: "Markdown" }));
         return "Image sent successfully.";
       } 
       else if (type === "document") {
-        await bot.telegram.sendDocument(chatId, source, { caption, parse_mode: "Markdown" });
+        await withTimeout(bot.telegram.sendDocument(chatId, source, { caption, parse_mode: "Markdown" }));
         return "Document sent successfully.";
       }
       else if (type === "audio") {
-        await bot.telegram.sendAudio(chatId, source, { caption, parse_mode: "Markdown" });
+        await withTimeout(bot.telegram.sendAudio(chatId, source, { caption, parse_mode: "Markdown" }));
         return "Audio sent successfully.";
       }
       else if (type === "tts") {
         if (!tts_text) return "tts_text is required for TTS.";
         
-        // Use Google Translate TTS API as a simple TTS engine
-        // Limit is roughly 200 chars per request, we truncate if needed
         const encodedText = encodeURIComponent(tts_text.substring(0, 200));
         const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=id&client=tw-ob`;
         
-        await bot.telegram.sendVoice(chatId, ttsUrl, { caption: "🔊 Voice Message" });
+        await withTimeout(bot.telegram.sendVoice(chatId, ttsUrl, { caption: "🔊 Voice Message" }));
         return "Text-to-Speech sent successfully.";
       }
       

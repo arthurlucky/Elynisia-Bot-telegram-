@@ -5,9 +5,7 @@ import os from "os";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
 
-// Import fungsi dari gateway
 import { resolveWorkspacePath } from "../utils/workspace.js";
-import { sendFileToUser } from "../gateway/index.js";
 
 const BASE_DIR = path.resolve(process.cwd());
 const DEFAULT_TIMEOUT = 60_000;
@@ -46,38 +44,14 @@ function resolveCwd(cwd, userId = null) {
 export const shellExecTool = new DynamicStructuredTool({
   name: "shell_exec",
   description:
-    "Jalankan perintah terminal/shell nyata. BISA JUGA untuk kirim file ke user via Telegram ATAU WhatsApp (otomatis sesuai gateway aktif) menggunakan perintah khusus: sendFile --pathfile=\"...\" --text=\"...\"",
+    "Jalankan perintah terminal/shell nyata (Linux).",
   schema: z.object({
     command: z.string(),
-    session_id: z.string().describe("WAJIB DIISI dengan Session ID (dari [INFO SYSTEM]) HANYA JIKA menggunakan perintah sendFile!").optional(),
     cwd: z.string().describe("Working directory. Kosongkan untuk mengeksekusi di root project (Emora-Agent).").optional(),
     timeout: z.number().int().min(1000).max(MAX_TIMEOUT).optional(),
     create_cwd: z.boolean().optional().default(true),
   }),
-  func: async ({ command, session_id, cwd, timeout = DEFAULT_TIMEOUT, create_cwd = true }, ctx) => {
-    
-    // [INTERCEPTOR]: Cegat perintah sendFile (bekerja untuk Telegram MAUPUN WhatsApp)
-    if (command.trim().startsWith("sendFile")) {
-      if (!session_id) return "❌ Gagal: parameter session_id WAJIB diisi untuk sendFile.";
-
-      const pathMatch = command.match(/--pathfile=(?:"([^"]+)"|'([^']+)'|(\S+))/);
-      const textMatch = command.match(/--text=(?:"([^"]+)"|'([^']+)'|(\S+))/);
-
-      if (!pathMatch) {
-        return '❌ Format salah. Gunakan: sendFile --pathfile="./namafile.txt" --text="Caption"';
-      }
-
-      const rawPath = pathMatch[1] || pathMatch[2] || pathMatch[3];
-      const caption = textMatch ? (textMatch[1] || textMatch[2] || textMatch[3]) : "";
-      const absolutePath = resolveWorkspacePath(rawPath, ctx?.userId);
-
-      if (!fs.existsSync(absolutePath)) {
-        return `❌ File tidak ditemukan: '${rawPath}'`;
-      }
-
-      const results = await sendFileToUser(session_id, absolutePath, caption);
-      return results.join("\n");
-    }
+  func: async ({ command, cwd, timeout = DEFAULT_TIMEOUT, create_cwd = true }, ctx) => {
 
     if (ctx?.userId) {
       const lower = command.toLowerCase();

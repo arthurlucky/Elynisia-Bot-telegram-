@@ -200,6 +200,7 @@ if (bot) {
       `💻 𝗦𝗜𝗦𝗧𝗘𝗠 & 𝗦𝗛𝗘𝗟𝗟\n` +
       `├⌑ 🖥️ \`$\` \`<cmd>\` - Shell privat (cth: \`$ls\`)\n` +
       `├⌑ 📊 \`/constatus\`, \`/btw\`, \`/mcp\`\n` +
+      `├⌑ 📋 \`/plan <tugas>\` - Buat blueprint proyek\n` +
       `╰⌑ ⚠️ \`/reset\` - Reset akun\n` +
       adminCmdsText +
       pluginCmdsText +
@@ -517,6 +518,21 @@ if (bot) {
     await ctx.reply(`📋 *ANTREAN TUGAS AKTIF*\n━━━━━━━━━━━━━━━━━━━━\n${queueStr}`, {
       parse_mode: "Markdown",
     });
+  });
+
+  // /plan
+  bot.command("plan", async (ctx) => {
+    const userId = ctx.from.id;
+    const prompt = (ctx.payload || "").trim();
+    if (!prompt) {
+      return ctx.reply("Gunakan: `/plan <deskripsi tugas>`\nContoh: `/plan buatkan bot discord sederhana menggunakan nodejs`", { parse_mode: "Markdown" });
+    }
+    
+    // Inject planning instruction
+    const planInstruction = `[PLANNING MODE]\nUser memintamu untuk membuat Rencana Implementasi (Roadmap) teknis untuk tugas berikut:\n"${prompt}"\n\nTugasmu:\n1. Pikirkan dan buat rencana implementasi langkah demi langkah.\n2. Tulis rencana tersebut ke dalam file Markdown (contoh: plan.md) di workspace user menggunakan tool write_file (jangan gunakan send_media, simpan saja di disk).\n3. Beritahu user bahwa rencana telah selesai dibuat.`;
+    
+    const chatId = await getOrSetActiveChat(userId);
+    taskManager.enqueueUserMessage(userId, planInstruction, ctx, chatId);
   });
 
   // /mcp

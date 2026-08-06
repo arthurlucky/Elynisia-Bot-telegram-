@@ -173,6 +173,14 @@ if (bot) {
         userPluginCmds.map(c => `• \`/${c.name}\` - ${c.desc}`).join("\n") + "\n";
     }
 
+    let adminCmdsText = "";
+    if (isStaff) {
+      adminCmdsText = `\n🛠 *Admin Commands:*\n` +
+        `• \`/admin\` - Panel admin\n` +
+        `• \`/setmenuurl <url>\` - Atur gambar menu /help\n` +
+        `• \`/plugin disable/enable/reload/uninstall\`\n`;
+    }
+
     let helpText = 
       `🤖 *ELYNISIA AI ASSISTANT*\n\n` +
       `💬 *Utama:*\n` +
@@ -183,19 +191,62 @@ if (bot) {
       `🧩 *Plugin & Workspace:*\n` +
       `• \`/plugin list\` - Daftar plugin terpasang\n` +
       `• \`/plugin install <url-github>\` - Instal plugin baru\n` +
-      `• \`/plugin enable <no/id>\` - Aktifkan plugin\n` +
-      `• \`/plugin disable <no/id>\` - Matikan plugin\n` +
-      `• \`/plugin uninstall <no/id>\` - Hapus plugin\n` +
       `• \`/artifact list\` - Daftar file/hasil AI\n\n` +
       `💻 *Sistem & Shell:*\n` +
       `• \`$\` \`<command>\` - Shell command privat (cth: \`$ls\`)\n` +
       `• \`/constatus\`, \`/mcp\`, \`/runtime\`, \`/btw\`\n` +
       `• \`/reset\` - **[DANGER]** Reset akun\n` +
-      (isStaff ? `\n🛠 *Admin:* \`/admin\`` : "") +
+      adminCmdsText +
       pluginCmdsText +
-      `\n_Ketik pesan apa saja untuk ngobrol dengan AI!_`;
+      `\nKetik pesan langsung untuk berbicara dengan saya!`;
 
-    await ctx.reply(helpText, { parse_mode: "Markdown" });
+    const db = await getGlobalDB();
+    const menuRow = await db.get("SELECT value FROM settings WHERE key = 'menu_url'");
+    const menuUrl = menuRow ? menuRow.value : null;
+
+    const buttons = Markup.inlineKeyboard([
+      [Markup.button.callback("🎒 Inventory", "help_inv"), Markup.button.callback("⚔️ RPG", "help_rpg")],
+      [Markup.button.callback("🏪 Shop", "help_shop"), Markup.button.callback("🧩 Plugins", "help_plugins")],
+      [Markup.button.callback("💻 System", "help_sys")]
+    ]);
+
+    try {
+      if (menuUrl) {
+        await ctx.replyWithPhoto({ url: menuUrl }, { caption: helpText, parse_mode: "Markdown", ...buttons });
+      } else {
+        await ctx.reply(helpText, { parse_mode: "Markdown", ...buttons });
+      }
+    } catch (err) {
+      await ctx.reply(helpText, { parse_mode: "Markdown", ...buttons });
+    }
+  });
+
+  // Help Callbacks
+  const helpMenus = {
+    "help_inv": "🎒 *INVENTORY & EKONOMI*\n• `/inv` - Buka inventory\n• `/convert` - Tukar uang\n• `/barter` - Tukar barang",
+    "help_rpg": "⚔️ *RPG COMMANDS*\n• `/hero` - Daftar hero\n• `/gacha` - Gacha hero\n• `/tower` - Ekspedisi\n• `/pvp` - Arena PvP",
+    "help_shop": "🏪 *SHOP COMMANDS*\n• `/shop` - Beli item sistem\n• `/shop buy <id>` - Beli item pemain\n• `/shop sell ...` - Jual item",
+    "help_plugins": "🧩 *PLUGIN COMMANDS*\n• `/plugin list` - Lihat plugin\n• `/plugin install <url>`\n• `/plugin disable <id>`\n• `/plugin enable <id>`",
+    "help_sys": "💻 *SYSTEM COMMANDS*\n• `$<cmd>` - Jalankan command Linux\n• `/constatus` - RAM/Disk\n• `/btw` - Status agent\n• `/mcp` - MCP server"
+  };
+
+  for (const [key, text] of Object.entries(helpMenus)) {
+    bot.action(key, async (ctx) => {
+      await ctx.answerCbQuery();
+      await ctx.reply(text, { parse_mode: "Markdown" });
+    });
+  }
+
+  // /setmenuurl
+  bot.command("setmenuurl", async (ctx) => {
+    const userId = ctx.from.id;
+    const role = await getUserRole(userId);
+    if (role !== "owner" && role !== "admin") return ctx.reply("❌ Khusus Admin/Owner.");
+    const url = (ctx.payload || "").trim();
+    if (!url) return ctx.reply("Gunakan: `/setmenuurl <url>`", { parse_mode: "Markdown" });
+    const db = await getGlobalDB();
+    await db.run("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", ["menu_url", url]);
+    return ctx.reply("✅ Gambar menu berhasil diatur! Silakan ketik /help untuk melihatnya.");
   });
 
   // /reset command

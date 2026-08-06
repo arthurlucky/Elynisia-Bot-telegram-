@@ -63,7 +63,10 @@ class PluginManager {
       for (const folder of folders) {
         const pluginPath = path.join(userDir, folder);
         if (fs.statSync(pluginPath).isDirectory()) {
-          await this.loadPlugin(userId, folder);
+          const loaded = await this.loadPlugin(userId, folder);
+          if (loaded) {
+            await this.enablePlugin(userId, folder);
+          }
         }
       }
     } catch (err) {}

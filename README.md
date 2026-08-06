@@ -87,7 +87,17 @@ Elynisia/
 - Akun Bot Telegram via `@BotFather`
 - Google Gemini API Key (atau provider LLM lain)
 
-### Setup
+### Setup Cepat (Auto-Install)
+
+Jalankan perintah ini di Termux atau Linux Anda untuk menginstal semua dependensi dan mengatur `.env` secara otomatis:
+
+```bash
+git clone https://github.com/arthurlucky/Elynisia-Bot-telegram-.git
+cd Elynisia-Bot-telegram-
+./install.sh
+```
+
+### Setup Manual
 
 1. Clone repo:
    ```bash
@@ -134,8 +144,10 @@ Elynisia/
 | 💻 Shell | `$cd <folder>` | Pindah direktori (stateful) |
 | 🖥️ Container | `/constatus` | Status RAM, Disk, CWD |
 | ℹ️ Info | `/status` | Status identitas user |
-| ℹ️ Info | `/help` | Daftar semua perintah |
+| ℹ️ Info | `/help` | Daftar semua perintah (mendukung tombol dinamis) |
 | 📋 Task | `/btw` | Cek antrean pekerjaan Agen Utama & Subagent aktif |
+| 🛠️ Admin | `/admin` | Membuka panel kontrol admin |
+| 🛠️ Admin | `/setmenuurl <url>` | Mengatur gambar utama untuk menu `/help` |
 
 ---
 

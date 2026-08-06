@@ -6,8 +6,11 @@
 
 ## ✨ Fitur Utama
 
-### 🤖 AI Agent
+### 🤖 AI Agent & Multi-User Task Queue
 - Ditenagai LangChain + Gemini (dapat diganti provider lain)
+- Eksekusi Paralel Multi-User: Obrolan tiap pengguna diproses di _thread_ terpisah.
+- Antrean Sekuensial: Mencegah tabrakan konteks dari *spam* pesan (Sequential-per-user).
+- Subagent Background Worker (`spawn_subagent`): Agen utama bisa mendelegasikan tugas berat ke latar belakang.
 - Memori percakapan per-sesi, multi-sesi per user
 - Identitas & kepribadian kustom via `SOUL.md` dan `AGENT.md`
 - Pemahaman penuh terhadap seluruh sistem Elynisia
@@ -132,6 +135,7 @@ Elynisia/
 | 🖥️ Container | `/constatus` | Status RAM, Disk, CWD |
 | ℹ️ Info | `/status` | Status identitas user |
 | ℹ️ Info | `/help` | Daftar semua perintah |
+| 📋 Task | `/btw` | Cek antrean pekerjaan Agen Utama & Subagent aktif |
 
 ---
 

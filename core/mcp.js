@@ -187,7 +187,7 @@ class MCPBridgeManager {
         };
 
         // Register in core tool registry
-        registry.registerTool(coreToolName, schema, async (args) => {
+        registry.registerTool(null, coreToolName, schema, async (args) => {
           console.log(`[MCP Bridge] Calling MCP tool: ${serverName}/${tool.name}`);
           const callResult = await this.sendRequest(serverName, "tools/call", {
             name: tool.name,

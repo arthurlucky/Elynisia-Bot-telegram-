@@ -48,13 +48,14 @@ class SkillManager {
             if (descMatch) {
               description = descMatch[1].trim();
             }
-            registry.registerSkill(item, content, description);
+            registry.registerSkill(null, item, content, description);
           }
         }
       }
 
       // Register tool to view a specific skill's contents
       registry.registerTool(
+        null,
         "read_skill",
         {
           name: "read_skill",

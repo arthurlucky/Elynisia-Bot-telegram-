@@ -25,6 +25,7 @@ class KnowledgeLibrary {
 
     // Register knowledge query tool
     registry.registerTool(
+      null,
       "query_knowledge",
       {
         name: "query_knowledge",

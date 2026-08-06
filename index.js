@@ -91,7 +91,7 @@ async function main() {
 
     console.log(`${C.cyan}[2/7] 🛠️ Mendaftarkan Core Tools (${tools.length} Tools)...${C.reset}`);
     for (const tool of tools) {
-      registry.registerTool(tool);
+      registry.registerTool(null, tool);
     }
 
     console.log(`${C.cyan}[3/7] 🎓 Memuat Skills Engine...${C.reset}`);

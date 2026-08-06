@@ -1,81 +1,63 @@
-// tools/swarm_delegate.js
-// Tool for delegating tasks from the main agent to specialized swarm containers
-
-import path from "path";
-import { fileURLToPath } from "url";
-import { createLLM } from "../provider/index.js";
-import { ask, invalidateSystemPromptCache } from "../core/chat.js";
-import { getContainerConfig } from "../swarm/manager.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, "..");
-const CONTAINERS_DIR = path.join(ROOT_DIR, ".emora", "containers");
+import { taskManager } from "../core/taskManager.js";
+import { ask } from "../core/agent.js";
 
 export const swarmDelegateTool = {
-  name: "delegate_to_subagent",
-  description: "Delegasikan tugas riset, analisis, atau pemrosesan lainnya ke subagent/container yang terisolasi dengan kepribadian/soul khusus. Kembalikan hasil kerjanya ke agen utama.",
+  name: "spawn_subagent",
+  description: "Delegasikan tugas kepada Subagent (misal: untuk riset mendalam, pencarian web ekstensif, koding, atau analisis data). Subagent bekerja secara asinkron di belakang layar tanpa memblokir chat utama.",
   parameters: {
     type: "object",
     properties: {
-      subagentId: {
+      role: {
         type: "string",
-        description: "Nama/ID container subagent (mis. agent-sales, bot-riset)."
+        description: "Peran subagent, misal: 'Web Researcher', 'Data Analyst'."
       },
       task: {
         type: "string",
-        description: "Instruksi/tugas spesifik yang ingin diberikan kepada subagent."
+        description: "Tugas spesifik dan sangat detail yang harus diselesaikan oleh subagent."
       }
     },
-    required: ["subagentId", "task"]
+    required: ["role", "task"]
   },
-  execute: async ({ subagentId, task }) => {
-    // Backup process.env
-    const backup = {
-      EMORA_MEMORY_DIR: process.env.EMORA_MEMORY_DIR,
-      EMORA_AGENT_PATH: process.env.EMORA_AGENT_PATH,
-      EMORA_SOUL_PATH: process.env.EMORA_SOUL_PATH,
-      MODEL_PROVIDER: process.env.MODEL_PROVIDER,
-      MODEL_NAME: process.env.MODEL_NAME,
-      MODEL_URL: process.env.MODEL_URL,
-      MODEL_API: process.env.MODEL_API,
-      NAME: process.env.NAME
-    };
+  func: async ({ role, task }, context) => {
+    const userId = context.userId;
+    const chatId = context.chatId;
 
-    try {
-      const dir = path.join(CONTAINERS_DIR, subagentId);
-      const config = await getContainerConfig(subagentId);
+    const taskId = taskManager.registerSubagentTask(userId, `[${role}] ${task}`);
 
-      // Apply overrides
-      process.env.EMORA_MEMORY_DIR = path.join(dir, "memory");
-      process.env.EMORA_AGENT_PATH = path.join(dir, "AGENT.md");
-      process.env.EMORA_SOUL_PATH = path.join(dir, "SOUL.md");
-      process.env.NAME = `Emora-${subagentId}`;
-      if (config.model_provider) process.env.MODEL_PROVIDER = config.model_provider;
-      if (config.model_name) process.env.MODEL_NAME = config.model_name;
-      if (config.model_url) process.env.MODEL_URL = config.model_url;
-      if (config.model_api) process.env.MODEL_API = config.model_api;
+    // Asynchronously run subagent
+    (async () => {
+      try {
+        const subagentPrompt = `[SUBAGENT INSTRUCTION: ROLE = ${role}]\nKamu ditugaskan oleh Agent Utama untuk menyelesaikan tugas berikut:\n\n${task}\n\nBerikan laporan hasil yang detail dan komprehensif agar Agent Utama bisa menggunakannya.`;
+        
+        const result = await ask(userId, chatId, subagentPrompt, (ev) => {
+          if (ev.type === "tool_use") {
+            taskManager.updateTaskStatus(taskId, `Memakai tool: ${ev.name}`);
+          }
+        });
 
-      invalidateSystemPromptCache();
+        const { bot } = await import("../gateway/telegram.js");
+        const report = `🤖 *LAPORAN SUBAGENT [${role}]*\n━━━━━━━━━━━━━━━━━━━━\n${result}`;
+        
+        // Split if too long
+        if (report.length > 4000) {
+          const chunks = report.match(/[\s\S]{1,4000}/g) || [report];
+          for (const chunk of chunks) {
+            await bot.telegram.sendMessage(userId, chunk, { parse_mode: "Markdown" });
+          }
+        } else {
+          await bot.telegram.sendMessage(userId, report, { parse_mode: "Markdown" });
+        }
+      } catch (err) {
+        console.error("Subagent Error:", err);
+        try {
+          const { bot } = await import("../gateway/telegram.js");
+          await bot.telegram.sendMessage(userId, `❌ *Subagent Error:* ${err.message}`, { parse_mode: "Markdown" });
+        } catch(e) {}
+      } finally {
+        taskManager.finishTask(taskId);
+      }
+    })();
 
-      const opts = {
-        apiKey: config.model_api,
-        model: config.model_name,
-        url: config.model_url
-      };
-      
-      // We pass empty tools to the subagent to prevent infinite recursion loop
-      const subagentLLM = await createLLM([], config.model_provider || "gemini", opts);
-      const sessionId = `swarm_${subagentId}`;
-
-      const result = await ask(subagentLLM, [], sessionId, task);
-      return { success: true, subagentId, result };
-    } catch (err) {
-      return { success: false, error: err.message };
-    } finally {
-      // Restore process.env
-      Object.assign(process.env, backup);
-      invalidateSystemPromptCache();
-    }
+    return `Tugas berhasil didelegasikan ke Subagent [${role}]. Subagent sedang bekerja di latar belakang (paralel) dan akan mengirimkan hasil laporannya ke chat ini saat selesai. Anda dapat melanjutkan obrolan atau mengecek statusnya via perintah /btw.`;
   }
 };

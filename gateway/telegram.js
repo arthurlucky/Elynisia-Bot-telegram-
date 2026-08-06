@@ -8,6 +8,7 @@ import { getUserDB, getGlobalDB } from "../core/db.js";
 import { ask } from "../core/agent.js";
 import { registry } from "../core/registry.js";
 import { scheduler } from "../core/scheduler.js";
+import { taskManager } from "../core/taskManager.js";
 import { SkillsManager } from "../core/skills_manager.js";
 import TowerManager from "../core/tower_manager.js";
 import BattleEngine from "../core/battle_engine.js";
@@ -435,23 +436,23 @@ if (bot) {
   // /btw
   bot.command("btw", async (ctx) => {
     const userId = ctx.from.id;
-    const db = await getUserDB(userId);
-    const queue = await db.all("SELECT * FROM task_queue ORDER BY id DESC LIMIT 5");
+    const tasks = taskManager.getUserActiveTasks(userId);
 
-    if (queue.length === 0) {
-      return ctx.reply("Tidak ada tugas di antrean saat ini.");
+    if (tasks.length === 0) {
+      return ctx.reply("Tidak ada tugas (Main Agent/Subagent) di antrean saat ini.");
     }
 
-    const queueStr = queue
+    const queueStr = tasks
       .map(
         (q) =>
-          `• *Job #${q.id}:* "${q.prompt.substring(0, 30)}..."\n` +
+          `• *[${q.type}]* Job #${q.taskId}\n` +
+          `  Tugas: "${q.prompt.substring(0, 40)}..."\n` +
           `  Status: \`${q.status}\`\n` +
-          `  Terakhir update: ${new Date(q.updated_at).toLocaleTimeString()}`
+          `  Durasi: ${Math.floor((Date.now() - q.startedAt)/1000)} detik`
       )
       .join("\n\n");
 
-    await ctx.reply(`📋 *ANTREAN TUGAS AGENT*\n━━━━━━━━━━━━━━━━━━━━\n${queueStr}`, {
+    await ctx.reply(`📋 *ANTREAN TUGAS AKTIF*\n━━━━━━━━━━━━━━━━━━━━\n${queueStr}`, {
       parse_mode: "Markdown",
     });
   });
@@ -2015,54 +2016,9 @@ if (bot) {
       }
     }
 
-    // Default: directly call AI agent (no queue, no eventBus — prevents spam/loop)
-    if (userTurns.get(userId)) {
-      // Already processing a turn for this user — silently drop to prevent spam
-      return;
-    }
-
-    userTurns.set(userId, true);
-    let isTyping = true;
-    const sendTyping = () => { if (isTyping) ctx.sendChatAction("typing").catch(() => {}); };
-    sendTyping();
-    const typingInterval = setInterval(sendTyping, 4000);
-
-    try {
-      const chatId = await getOrSetActiveChat(userId);
-      const toolLogs = [];
-
-      const result = await ask(userId, chatId, text, (ev) => {
-        if (ev.type === "tool_use") {
-          toolLogs.push(`🔧 *Tool:* \`${ev.name}\``);
-        }
-      });
-
-      isTyping = false;
-      clearInterval(typingInterval);
-
-      let finalMsg = "";
-      if (toolLogs.length > 0) {
-        finalMsg += `⚙️ *LOG EKSEKUSI TUGAS:*\n${toolLogs.join("\n")}\n\n`;
-      }
-      finalMsg += result;
-
-      // Split if message exceeds Telegram 4096-char limit
-      if (finalMsg.length > 4000) {
-        const chunks = finalMsg.match(/[\s\S]{1,4000}/g) || [finalMsg];
-        for (const chunk of chunks) {
-          await ctx.reply(chunk, { parse_mode: "Markdown" });
-        }
-      } else {
-        await ctx.reply(finalMsg, { parse_mode: "Markdown" });
-      }
-    } catch (err) {
-      isTyping = false;
-      clearInterval(typingInterval);
-      console.error(`[Telegram Agent Run Error]`, err.message);
-      await ctx.reply(`❌ *Error:* ${err.message}`, { parse_mode: "Markdown" });
-    } finally {
-      userTurns.delete(userId);
-    }
+    // Menggunakan Multi-User Parallel Task Queue System
+    const chatId = await getOrSetActiveChat(userId);
+    taskManager.enqueueUserMessage(userId, text, ctx, chatId);
   });
 }
 

@@ -17,9 +17,10 @@ import { z } from "zod";
 import { handleGroupCommand } from "../gateway/index.js";
 
 export const groupManagerTool = tool(
-  async ({ action, session_id, userId, messageId }) => {
+  async ({ action, userId, messageId }, ctx) => {
+    const session_id = ctx?.chatId || ctx?.userId;
     if (!session_id) {
-      return "❌ Parameter session_id wajib diisi (ambil dari blok [INFO SYSTEM] di system prompt).";
+      return "❌ Gagal: Tidak ada chat context.";
     }
 
     const args = (userId ? ` --userId="${userId}"` : "") + (messageId ? ` --messageId="${messageId}"` : "");
@@ -55,7 +56,6 @@ export const groupManagerTool = tool(
         "groupDeleteMessage",
         "groupInviteLink",
       ]),
-      session_id: z.string().describe("WAJIB. Session ID aktif user ini, dari blok [INFO SYSTEM] di system prompt."),
       userId: z
         .string()
         .optional()

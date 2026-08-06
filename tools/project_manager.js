@@ -85,7 +85,6 @@ export default new DynamicStructuredTool({
     new_task_description: z.string().optional().describe("Deskripsi task baru (untuk add_task)"),
     new_task_depends_on: z.array(z.string()).optional().describe("Dependensi task baru (untuk add_task)"),
     summary_context: z.string().optional().describe("Konteks hasil task (complete_task)"),
-    session_id: z.string().optional().describe("Session ID untuk broadcast progress"),
     force: z.boolean().optional().describe("Jika true, timpa proyek yang sudah ada (create_plan) atau hapus tanpa konfirmasi (delete_project)"),
     new_name: z.string().optional().describe("Nama baru (untuk rename_project)"),
   }),
@@ -101,10 +100,10 @@ export default new DynamicStructuredTool({
     new_task_description,
     new_task_depends_on,
     summary_context,
-    session_id,
     force,
     new_name,
-  }) {
+  }, ctx) {
+    const session_id = ctx?.chatId || ctx?.userId;
     await fs.mkdir(DB_DIR, { recursive: true }).catch(() => {});
 
     try {

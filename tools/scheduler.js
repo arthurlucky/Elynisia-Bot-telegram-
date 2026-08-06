@@ -10,12 +10,12 @@ export const schedulerTool = new DynamicStructuredTool({
   schema: z.object({
     action: z.enum(["start_job", "stop_job"]),
     job_id: z.string().describe("ID unik tanpa spasi, misal: 'monitor_workspaces'"),
-    session_id: z.string().describe("Session ID milik user"),
     interval_seconds: z.number().optional().describe("Berapa detik sekali tugas dieksekusi? (Minimal 10 detik agar aman)"),
     count: z.number().optional().describe("Jumlah maksimal tugas dieksekusi. Default: 1. Jika mencapai 0, job otomatis dihapus."),
     prompt: z.string().optional().describe("Instruksi tugas. Akhiri dengan: 'Jika kondisi tidak terpenuhi, balas HANYA dengan kata SILENT_ABORT'")
   }),
-  async func({ action, job_id, session_id, interval_seconds, count = 1, prompt }) {
+  async func({ action, job_id, interval_seconds, count = 1, prompt }, ctx) {
+    const session_id = ctx?.chatId || ctx?.userId;
     if (action === "stop_job") {
       if (!activeJobs[job_id]) return `❌ Job '${job_id}' tidak ditemukan atau sudah mati.`;
       

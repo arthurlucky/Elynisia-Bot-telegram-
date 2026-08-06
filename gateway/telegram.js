@@ -212,12 +212,18 @@ if (bot) {
 
     try {
       if (menuUrl) {
-        await ctx.replyWithPhoto({ url: menuUrl }, { caption: helpText, parse_mode: "Markdown", ...buttons });
+        await ctx.replyWithPhoto(menuUrl, { caption: helpText, parse_mode: "Markdown", ...buttons });
       } else {
         await ctx.reply(helpText, { parse_mode: "Markdown", ...buttons });
       }
     } catch (err) {
-      await ctx.reply(helpText, { parse_mode: "Markdown", ...buttons });
+      console.error("[Telegram] Error in /help command:", err);
+      try {
+        await ctx.reply(helpText, { parse_mode: "Markdown", ...buttons });
+      } catch (e) {
+        console.error("[Telegram] Fallback reply also failed:", e);
+        await ctx.reply("Gagal menampilkan menu bantuan. Silakan lapor ke admin.");
+      }
     }
   });
 

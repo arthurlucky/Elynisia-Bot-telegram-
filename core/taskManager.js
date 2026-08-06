@@ -9,46 +9,25 @@ class TaskManager {
   }
 
   enqueueUserMessage(userId, text, ctx, chatId) {
-    if (!this.queues.has(userId)) {
-      this.queues.set(userId, []);
-    }
-    
     const taskId = ++this.taskCounter;
-    this.queues.get(userId).push({ taskId, text, ctx, chatId });
+    const taskObj = { taskId, text, ctx, chatId };
     
     this.activeTasks.set(taskId, {
       userId,
       type: "Main Agent",
       prompt: text,
-      status: "Queued",
+      status: "Thinking...",
       startedAt: Date.now()
     });
 
-    this.processQueue(userId);
+    // Eksekusi secara paralel tanpa queue/block
+    this.executeUserTask(userId, taskObj)
+      .catch((err) => console.error(`Error executing task for user ${userId}:`, err))
+      .finally(() => {
+        this.activeTasks.delete(taskId);
+      });
+      
     return taskId;
-  }
-
-  async processQueue(userId) {
-    if (this.processing.has(userId)) return;
-    
-    const queue = this.queues.get(userId);
-    if (!queue || queue.length === 0) return;
-
-    this.processing.add(userId);
-    const task = queue.shift();
-    
-    const activeTask = this.activeTasks.get(task.taskId);
-    if (activeTask) activeTask.status = "Thinking...";
-
-    try {
-      await this.executeUserTask(userId, task);
-    } catch (err) {
-      console.error(`Error executing task for user ${userId}:`, err);
-    } finally {
-      this.activeTasks.delete(task.taskId);
-      this.processing.delete(userId);
-      this.processQueue(userId);
-    }
   }
 
   async executeUserTask(userId, task) {

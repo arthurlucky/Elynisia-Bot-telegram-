@@ -15,11 +15,11 @@ export const sendMediaTool = new DynamicStructuredTool({
     caption: z.string().optional().describe("Caption for image or document (max 1024 chars)"),
     tts_text: z.string().optional().describe("Text to convert to speech (if type is tts)")
   }),
-  func: async ({ type, url_or_path, caption, tts_text }, runManager, config) => {
+  func: async ({ type, url_or_path, caption, tts_text }, ctx) => {
     try {
       if (!bot) return "Bot instance not found. Cannot send media.";
       
-      const { chatId, userId } = config.configurable || {};
+      const { chatId, userId } = ctx || {};
       if (!chatId) return "No chatId provided in config.";
 
       // Resolve file source

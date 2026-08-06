@@ -1929,12 +1929,58 @@ if (bot) {
     }
   });
 
-  // 3. User State Machine / Text Message Handler
-  bot.on("text", async (ctx) => {
+  // 3. User State Machine / Message Handler (Text, Photos, Audio, Document)
+  bot.on("message", async (ctx) => {
     const userId = ctx.from.id;
-    let text = ctx.message.text.trim();
+    let text = ctx.message.text || ctx.message.caption || "";
+    let contentArray = [];
 
-    // Check wizard state machine
+    if (text) {
+      contentArray.push({ type: "text", text: text });
+    }
+
+    if (ctx.message.photo) {
+      const photo = ctx.message.photo[ctx.message.photo.length - 1]; // Highest resolution
+      try {
+        const fileLink = await ctx.telegram.getFileLink(photo.file_id);
+        if (!text) {
+            text = "User attached an image.";
+            contentArray.push({ type: "text", text: text });
+        }
+        contentArray.push({
+          type: "image_url",
+          image_url: { url: fileLink.href }
+        });
+      } catch (err) {
+        console.error("Gagal get image link:", err);
+      }
+    }
+
+    if (ctx.message.voice || ctx.message.audio || ctx.message.document) {
+      try {
+        const fileId = ctx.message.voice ? ctx.message.voice.file_id : (ctx.message.audio ? ctx.message.audio.file_id : ctx.message.document.file_id);
+        const fileLink = await ctx.telegram.getFileLink(fileId);
+        
+        const attachInfo = `\n[File Terlampir: ${fileLink.href}]`;
+        if (contentArray.length > 0 && contentArray[0].type === "text") {
+          contentArray[0].text += attachInfo;
+          text += attachInfo;
+        } else {
+          text = "User attached a file: " + fileLink.href;
+          contentArray.push({ type: "text", text: text });
+        }
+      } catch (err) {
+        console.error("Gagal get file link:", err);
+      }
+    }
+
+    text = text.trim();
+    if (!text && contentArray.length === 0) return; // ignore if totally empty
+
+    // We will use finalContent to pass to taskManager
+    const finalContent = contentArray.length > 1 ? contentArray : text;
+
+    // Check wizard state machine (only if text is present and it's a simple string, but we can just use `text`)
     const stateObj = userStates.get(String(userId));
     if (stateObj) {
       if (stateObj.state === "waiting_role_name") {
@@ -2080,7 +2126,7 @@ if (bot) {
 
     // Menggunakan Multi-User Parallel Task Queue System
     const chatId = await getOrSetActiveChat(userId);
-    taskManager.enqueueUserMessage(userId, text, ctx, chatId);
+    taskManager.enqueueUserMessage(userId, finalContent, ctx, chatId);
   });
 }
 

@@ -29,6 +29,7 @@ import knowledgeLibraryTool from "../tools/knowledge_library.js";
 import { loadMCPTools } from "../tools/mcp_bridge.js";
 import { swarmDelegateTool } from "../tools/swarm_delegate.js";
 import { getUserProfileTool } from "../tools/get_user_profile.js";
+import { sendMediaTool } from "../tools/send_media.js";
 
 const tools = [
   SearchWebTool,
@@ -60,7 +61,8 @@ const tools = [
   groupManagerTool,
   knowledgeLibraryTool,
   swarmDelegateTool,
-  getUserProfileTool
+  getUserProfileTool,
+  sendMediaTool
 ];
 
 // ─────────────────────────────────────────────

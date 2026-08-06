@@ -169,36 +169,41 @@ if (bot) {
     const userPluginCmds = registry.getUserCommands(userId);
     let pluginCmdsText = "";
     if (userPluginCmds.length > 0) {
-      pluginCmdsText = `\n🧩 *Plugin Commands Anda:*\n` + 
-        userPluginCmds.map(c => `• \`/${c.name}\` - ${c.desc}`).join("\n") + "\n";
+      pluginCmdsText = `\n🧩 𝗣𝗟𝗨𝗚𝗜𝗡 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦\n` + 
+        userPluginCmds.map(c => `├⌑ ⚙️ \`/${c.name}\` - ${c.desc}`).join("\n") + "\n";
     }
 
     let adminCmdsText = "";
     if (isStaff) {
-      adminCmdsText = `\n🛠 *Admin Commands:*\n` +
-        `• \`/admin\` - Panel admin\n` +
-        `• \`/setmenuurl <url>\` - Atur gambar menu /help\n` +
-        `• \`/plugin disable/enable/reload/uninstall\`\n`;
+      adminCmdsText = `\n🛠 𝗔𝗗𝗠𝗜𝗡 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦\n` +
+        `├⌑ 🛡️ \`/admin\` - Panel admin\n` +
+        `├⌑ 🖼️ \`/setmenuurl\` - Atur gambar menu\n` +
+        `╰⌑ 🔌 \`/plugin disable/enable/reload\`\n`;
     }
 
     let helpText = 
-      `🤖 *ELYNISIA AI ASSISTANT*\n\n` +
-      `💬 *Utama:*\n` +
-      `• \`/newchat\`, \`/listchat\`, \`/switchchat\`, \`/deletechat\`\n` +
-      `• \`/inv\`, \`/shop\`, \`/barter\`, \`/convert\`, \`/status\`\n\n` +
-      `🎮 *Game & Ekspedisi:*\n` +
-      `• \`/hero\`, \`/gacha\`, \`/skill\`, \`/tower\`, \`/pvp\`, \`/spin\`, \`/dice\`\n\n` +
-      `🧩 *Plugin & Workspace:*\n` +
-      `• \`/plugin list\` - Daftar plugin terpasang\n` +
-      `• \`/plugin install <url-github>\` - Instal plugin baru\n` +
-      `• \`/artifact list\` - Daftar file/hasil AI\n\n` +
-      `💻 *Sistem & Shell:*\n` +
-      `• \`$\` \`<command>\` - Shell command privat (cth: \`$ls\`)\n` +
-      `• \`/constatus\`, \`/mcp\`, \`/runtime\`, \`/btw\`\n` +
-      `• \`/reset\` - **[DANGER]** Reset akun\n` +
+      `📜 𝗘𝗟𝗬𝗡𝗜𝗦𝗜𝗔 𝗔𝗜 𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧\n` +
+      `━━━━━━━━━━━━━━━━━━━━━⨳\n` +
+      `🪪 𝗜𝗗𝗘𝗡𝗧𝗜𝗧𝗔𝗦 𝗣𝗘𝗡𝗚𝗚𝗨𝗡𝗔\n` +
+      `├⌑ 👤 𝗡𝗮𝗺𝗮 : ${ctx.from.first_name || "User"}\n` +
+      `╰⌑ 🆔 𝗜𝗗 : ${userId}\n\n` +
+      `💬 𝗠𝗘𝗡𝗨 𝗨𝗧𝗔𝗠𝗔\n` +
+      `├⌑ 🤖 \`/newchat\`, \`/listchat\`, \`/switchchat\`\n` +
+      `╰⌑ 🎒 \`/inv\`, \`/shop\`, \`/barter\`, \`/status\`\n\n` +
+      `🎮 𝗚𝗔𝗠𝗘 & 𝗘𝗞𝗦𝗣𝗘𝗗𝗜𝗦𝗜\n` +
+      `├⌑ ⚔️ \`/hero\`, \`/tower\`, \`/pvp\`\n` +
+      `╰⌑ 🎲 \`/gacha\`, \`/skill\`, \`/spin\`, \`/dice\`\n\n` +
+      `🧩 𝗣𝗟𝗨𝗚𝗜𝗡 & 𝗪𝗢𝗥𝗞𝗦𝗣𝗔𝗖𝗘\n` +
+      `├⌑ 📦 \`/plugin list\` - Daftar plugin\n` +
+      `├⌑ 📥 \`/plugin install <url>\` - Instal baru\n` +
+      `╰⌑ 📁 \`/artifact list\` - Daftar file AI\n\n` +
+      `💻 𝗦𝗜𝗦𝗧𝗘𝗠 & 𝗦𝗛𝗘𝗟𝗟\n` +
+      `├⌑ 🖥️ \`$\` \`<cmd>\` - Shell privat (cth: \`$ls\`)\n` +
+      `├⌑ 📊 \`/constatus\`, \`/btw\`, \`/mcp\`\n` +
+      `╰⌑ ⚠️ \`/reset\` - Reset akun\n` +
       adminCmdsText +
       pluginCmdsText +
-      `\nKetik pesan langsung untuk berbicara dengan saya!`;
+      `\n📨 _Ketik pesan langsung untuk berbicara dengan saya!_`;
 
     const db = await getGlobalDB();
     const menuRow = await db.get("SELECT value FROM settings WHERE key = 'menu_url'");

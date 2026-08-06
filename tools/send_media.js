@@ -3,7 +3,7 @@ import { z } from "zod";
 import { bot } from "../gateway/telegram.js";
 import path from "path";
 import fs from "fs";
-import { getUserWorkspaceRoot, getUserCwd } from "../utils/workspace.js";
+import { getUserWorkspaceRoot, getUserCwd } from "../utils/container.js";
 import * as crypto from "crypto";
 
 export const sendMediaTool = new DynamicStructuredTool({

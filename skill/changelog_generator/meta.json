@@ -1,0 +1,8 @@
+{
+  "name": "changelog_generator",
+  "description": "Membuat atau memperbarui CHANGELOG.md secara terstruktur berdasarkan riwayat commit git terbaru.",
+  "source_pattern": null,
+  "created_at": "2026-06-22T00:00:00.000Z",
+  "has_script": false,
+  "version": "1.0.0"
+}

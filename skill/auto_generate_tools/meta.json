@@ -1,0 +1,8 @@
+{
+  "name": "auto_generate_tools",
+  "description": "Otomatisasi pembuatan tool baru untuk sistem AI berdasarkan standar DynamicStructuredTool.",
+  "source_pattern": null,
+  "created_at": "2026-06-20T04:07:36.920Z",
+  "has_script": false,
+  "version": "1.0.0"
+}

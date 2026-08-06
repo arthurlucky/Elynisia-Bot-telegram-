@@ -1,0 +1,19 @@
+{
+  "id": "weather",
+  "name": "Weather Plugin",
+  "version": "1.0.0",
+  "author": "Developer",
+  "description": "Weather service integration for Elynisia",
+  "homepage": "",
+  "license": "MIT",
+  "entry": "index.js",
+  "dependencies": [],
+  "commands": true,
+  "agents": false,
+  "skills": false,
+  "tools": true,
+  "hooks": true,
+  "providers": false,
+  "mcp": false,
+  "knowledge": false
+}

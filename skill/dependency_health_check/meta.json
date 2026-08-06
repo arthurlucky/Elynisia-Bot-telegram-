@@ -1,0 +1,8 @@
+{
+  "name": "dependency_health_check",
+  "description": "Cek kesehatan dependency project (package.json): versi usang, potensi konflik, dan advisory keamanan yang diketahui publik, tanpa menginstall apapun.",
+  "source_pattern": null,
+  "created_at": "2026-06-22T00:00:00.000Z",
+  "has_script": false,
+  "version": "1.0.0"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "website_health_check",
+  "description": "Cek kesehatan website atau endpoint API: apakah dapat diakses, berapa response time-nya, apakah SSL-nya masih valid, dan apa ada error yang terdeteksi dari kontennya.",
+  "source_pattern": null,
+  "created_at": "2026-06-22T00:00:00.000Z",
+  "has_script": false,
+  "version": "1.0.0"
+}

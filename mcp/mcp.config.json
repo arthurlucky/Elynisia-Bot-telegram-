@@ -1,0 +1,9 @@
+{
+  "servers": [
+  ],
+  "emora_as_server": {
+    "enabled": false,
+    "port": 3099,
+    "transport": "stdio"
+  }
+}

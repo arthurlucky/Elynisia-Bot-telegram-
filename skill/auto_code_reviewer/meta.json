@@ -1,0 +1,8 @@
+{
+  "name": "auto_code_reviewer",
+  "description": "Melakukan audit kode otomatis untuk mendeteksi bug, keamanan, dan optimasi best practice.",
+  "source_pattern": null,
+  "created_at": "2026-06-20T04:04:54.377Z",
+  "has_script": false,
+  "version": "1.0.0"
+}

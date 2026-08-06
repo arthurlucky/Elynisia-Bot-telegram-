@@ -1,0 +1,8 @@
+{
+  "name": "group_broadcast_announcer",
+  "description": "Menyusun dan mengirimkan pengumuman/broadcast yang terstruktur ke grup Telegram atau WhatsApp aktif, dengan format yang disesuaikan per platform.",
+  "source_pattern": null,
+  "created_at": "2026-06-22T00:00:00.000Z",
+  "has_script": false,
+  "version": "1.0.0"
+}

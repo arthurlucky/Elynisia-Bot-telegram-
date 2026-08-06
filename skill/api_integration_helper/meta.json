@@ -1,0 +1,8 @@
+{
+  "name": "api_integration_helper",
+  "description": "Integrasikan API pihak ketiga ke dalam project: baca dokumentasinya, buat wrapper module, simpan kredensial di .env, dan uji coba pemanggilannya.",
+  "source_pattern": null,
+  "created_at": "2026-06-22T00:00:00.000Z",
+  "has_script": false,
+  "version": "1.0.0"
+}

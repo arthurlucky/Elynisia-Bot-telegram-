@@ -1,0 +1,8 @@
+{
+  "name": "environment_configuration_validator",
+  "description": "Validate project environment configuration by verifying environment files, checking required variables, detecting missing or unused variables, validating formatting, and comparing configuration against the application's source code.",
+  "source_pattern": null,
+  "created_at": "2026-06-30T00:00:00.000Z",
+  "has_script": false,
+  "version": "1.0.0"
+}

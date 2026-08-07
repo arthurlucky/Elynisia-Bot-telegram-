@@ -3,8 +3,8 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import readline from "readline";
-import { getGlobalDB } from "./core/db.js";
-import { getUserRole, setUserRole } from "./core/permissions.js";
+import { getGlobalDB } from "./client/core/db.js";
+import { getUserRole, setUserRole } from "./client/core/permissions.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

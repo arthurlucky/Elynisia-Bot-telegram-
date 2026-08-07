@@ -50,10 +50,17 @@ fi
 echo -e "\n${Y}[3/4] Menginstal modul Node.js (Microservices)...${N}"
 npm install
 
-# 4. Selesai
-echo -e "\n${Y}[4/4] Finalisasi...${N}"
+# 4. Global CLI Link
+echo -e "\n${Y}[4/5] Mengaktifkan Global CLI (elynisia)...${N}"
+npm link
+
+# 5. Selesai
+echo -e "\n${Y}[5/5] Finalisasi...${N}"
 echo -e "${G}Instalasi Selesai!${N}"
 echo -e "${C}=================================================${N}"
-echo -e "${C} Untuk memulai Setup Interaktif, ketik:          ${N}"
-echo -e "${G}      cd Elynisia && npm start                   ${N}"
+echo -e "${C} Untuk melakukan konfigurasi awal, ketik:        ${N}"
+echo -e "${G}      cd Elynisia && elynisia setup              ${N}"
+echo -e "${C}                                                 ${N}"
+echo -e "${C} Untuk menjalankan bot, ketik:                   ${N}"
+echo -e "${G}      npm start                                  ${N}"
 echo -e "${C}=================================================${N}"

@@ -87,7 +87,7 @@ const printBanner = () => {
 };
 
 async function runWizard() {
-  if (config.PORT && config.API_KEY) return;
+  if (config.PORT && config.API_KEY && config.MODEL_PROVIDER && config.MODEL_NAME) return;
   
   printBanner();
   
@@ -104,12 +104,43 @@ async function runWizard() {
       name: "apiKey",
       message: "🔑 Buat Password Rahasia Server (Untuk \`/server connect\`):",
       mask: "*"
+    },
+    {
+      type: "select",
+      name: "provider",
+      message: "🧠 Pilih Provider AI Utama:",
+      choices: ["gemini", "openai", "anthropic", "groq", "deepseek", "ollama", "openrouter", "customEndpoint"]
+    },
+    {
+      type: "input",
+      name: "modelName",
+      message: "🤖 Masukkan Nama Model AI (Misal: gemini-2.5-flash):",
+      default: "gemini-2.5-flash"
+    },
+    {
+      type: "input",
+      name: "modelUrl",
+      message: "🌐 Masukkan Base URL Endpoint AI (Biarkan kosong jika bawaan Provider):",
+      default: ""
+    },
+    {
+      type: "password",
+      name: "modelApi",
+      message: "🔑 Masukkan API Key Provider AI (Biarkan kosong jika Ollama/Local):",
+      mask: "*"
     }
   ]);
   
   const spinner = ora("Menyimpan rahasia server...").start();
   
-  fs.writeFileSync(envPath, \`PORT=\${answers.port}\\nAPI_KEY=\${answers.apiKey}\\n\`, "utf8");
+  const envContent = \`PORT=\${answers.port}
+API_KEY=\${answers.apiKey}
+MODEL_PROVIDER=\${answers.provider}
+MODEL_NAME=\${answers.modelName}
+MODEL_URL=\${answers.modelUrl}
+MODEL_API=\${answers.modelApi}
+\`;
+  fs.writeFileSync(envPath, envContent, "utf8");
   
   setTimeout(() => {
     spinner.succeed("Konfigurasi disimpan! Silakan restart server dengan 'npm start'");

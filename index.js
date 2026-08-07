@@ -48,8 +48,8 @@ async function askSetupWizard() {
   
   // Periksa kelengkapan konfigurasi saat ini
   const hasBase = currentConfig.APP_MODE && currentConfig.PORT;
-  const hasGlobal = hasBase && currentConfig.TELEGRAM_TOKEN_BOT && currentConfig.MODEL_API;
-  const hasServer = hasBase && currentConfig.MODEL_API;
+  const hasGlobal = hasBase && currentConfig.TELEGRAM_TOKEN_BOT && currentConfig.MODEL_PROVIDER && currentConfig.MODEL_NAME;
+  const hasServer = hasBase && currentConfig.MODEL_PROVIDER && currentConfig.MODEL_NAME;
   const hasClient = hasBase && currentConfig.TELEGRAM_TOKEN_BOT;
   
   if ((currentConfig.APP_MODE === "global" && hasGlobal) ||
@@ -87,21 +87,37 @@ async function askSetupWizard() {
 
   const credentialsPrompt = [];
 
-  // Jika Server / Global, butuh Model API
+  // Jika Server / Global, butuh Model Konfigurasi
   if (mode === "global" || mode === "server") {
     if (!currentConfig.MODEL_PROVIDER) {
       credentialsPrompt.push({
         type: "select",
         name: "provider",
         message: "🧠 Pilih Provider AI Utama:",
-        choices: ["gemini", "openai", "anthropic", "groq", "deepseek", "ollama", "openrouter"]
+        choices: ["gemini", "openai", "anthropic", "groq", "deepseek", "ollama", "openrouter", "customEndpoint"]
+      });
+    }
+    if (!currentConfig.MODEL_NAME) {
+      credentialsPrompt.push({
+        type: "input",
+        name: "modelName",
+        message: "🤖 Masukkan Nama Model AI (Misal: gemini-2.5-flash atau kr/claude-haiku-4.5):",
+        default: "gemini-2.5-flash"
+      });
+    }
+    if (!currentConfig.MODEL_URL) {
+      credentialsPrompt.push({
+        type: "input",
+        name: "modelUrl",
+        message: "🌐 Masukkan Base URL Endpoint AI (Biarkan kosong jika bawaan Provider):",
+        default: ""
       });
     }
     if (!currentConfig.MODEL_API) {
       credentialsPrompt.push({
         type: "password",
         name: "modelApi",
-        message: "🔑 Masukkan API Key Provider AI (Disembunyikan):",
+        message: "🔑 Masukkan API Key Provider AI (Biarkan kosong jika Ollama/Local):",
         mask: "*"
       });
     }
@@ -130,6 +146,8 @@ async function askSetupWizard() {
   if (credentialsPrompt.length > 0) {
     const credAnswers = await inquirer.prompt(credentialsPrompt);
     if (credAnswers.provider) currentConfig.MODEL_PROVIDER = credAnswers.provider;
+    if (credAnswers.modelName) currentConfig.MODEL_NAME = credAnswers.modelName;
+    if (credAnswers.modelUrl) currentConfig.MODEL_URL = credAnswers.modelUrl;
     if (credAnswers.modelApi) currentConfig.MODEL_API = credAnswers.modelApi;
     if (credAnswers.botToken) currentConfig.TELEGRAM_TOKEN_BOT = credAnswers.botToken;
     if (credAnswers.ownerId) {

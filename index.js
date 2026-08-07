@@ -175,6 +175,12 @@ async function main() {
   const mode = config.APP_MODE;
   const port = config.PORT;
   
+  if (process.argv.includes("--setup-only")) {
+    console.log("\n\x1b[32m✅ Setup Wizard Selesai!\x1b[0m");
+    console.log("Ketik \x1b[36melynisia start\x1b[0m atau \x1b[36mnpm start\x1b[0m untuk menjalankan sistem.");
+    process.exit(0);
+  }
+  
   console.log("\n\x1b[36m⚡ Memulai Inisialisasi Sistem...\x1b[0m");
   const hasClient = fs.existsSync(path.join(__dirname, "client"));
   const hasServer = fs.existsSync(path.join(__dirname, "server"));

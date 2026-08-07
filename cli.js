@@ -72,6 +72,7 @@ async function runCommand(cmdLine, isInteractive = false) {
     console.log("            ELYNISIA CLI HELP");
     console.log("==========================================");
     console.log("/setup                - Mulai Setup Wizard (Inisialisasi Server)");
+    console.log("/start                - Menjalankan Elynisia (berdasarkan .env)");
     console.log("/reset                - Hapus semua konfigurasi & database (!Bahaya)");
     console.log("/userlist             - List all registered bot users");
     console.log("/rolemanager <uid> <role> - Manage/update user roles");
@@ -84,8 +85,16 @@ async function runCommand(cmdLine, isInteractive = false) {
     console.log("🚀 Menjalankan Setup Wizard Elynisia...");
     // Jalankan index.js melalui child process agar dapat berinteraksi dengan Inquirer
     const { spawn } = await import("child_process");
-    const setupProc = spawn("node", [path.join(__dirname, "index.js")], { stdio: "inherit" });
+    const setupProc = spawn("node", [path.join(__dirname, "index.js"), "--setup-only"], { stdio: "inherit" });
     await new Promise(resolve => setupProc.on("close", resolve));
+  }
+
+  else if (cmd === "start" || cmd === "run") {
+    console.log("🚀 Memulai Sistem Elynisia...");
+    // Import dan jalankan file index.js (ini akan membaca mode dari .env)
+    const { spawn } = await import("child_process");
+    const startProc = spawn("node", [path.join(__dirname, "index.js")], { stdio: "inherit" });
+    await new Promise(resolve => startProc.on("close", resolve));
   }
 
   else if (cmd === "reset") {

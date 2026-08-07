@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # Database Utama: PostgreSQL (ACID Compliant)
+  postgres:
+    image: postgres:15-alpine
+    container_name: elynisia-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: elynisia
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: elynisia_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - elynisia-net
+
+  # Cache & Queue: Redis (Hitungan Milidetik)
+  redis:
+    image: redis:7-alpine
+    container_name: elynisia-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - elynisia-net
+      
+  # Bot Engine (Node.js)
+  bot:
+    build: .
+    container_name: elynisia-engine
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_USER=elynisia
+      - DB_PASS=mysecretpassword
+      - DB_NAME=elynisia_db
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "3000:3000" # Expose metrics endpoint
+    volumes:
+      - ./.env:/usr/src/app/.env
+      - ./Workspaces:/usr/src/app/Workspaces
+    networks:
+      - elynisia-net
+
+  # Prometheus (Scraping Metrics)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: elynisia-prometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - elynisia-net
+
+  # Grafana (Visual Dashboard)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: elynisia-grafana
+    restart: always
+    depends_on:
+      - prometheus
+    ports:
+      - "3001:3000"
+    networks:
+      - elynisia-net
+
+networks:
+  elynisia-net:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redisdata:

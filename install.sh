@@ -1,72 +1,59 @@
 #!/bin/bash
-# Elynisia Bot Setup Wizard for Termux/Linux
+# Elynisia Enterprise Bot - Universal Setup Script
+# Usage: curl -sL https://raw.githubusercontent.com/username/Elynisia/main/install.sh | bash
 
-# Colors
-GREEN='\033[0;32m'
-CYAN='\033[0;36m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Colors for UI
+G="\033[0;32m"
+C="\033[0;36m"
+Y="\033[1;33m"
+R="\033[0;31m"
+N="\033[0m" # No Color
 
-echo -e "${CYAN}=================================================${NC}"
-echo -e "${CYAN}       ELYNSIA AI BOT - SETUP WIZARD             ${NC}"
-echo -e "${CYAN}=================================================${NC}"
-echo ""
+clear
+echo -e "${C}=================================================${N}"
+echo -e "${C}   🚀 ELYNISIA AI PLATFORM - SETUP WIZARD        ${N}"
+echo -e "${C}=================================================${N}"
+echo -e "${Y}Memulai proses instalasi otomatis lintas OS...${N}\n"
 
-# 1. System Update & Dependencies
-echo -e "${YELLOW}[1/4] Checking and installing dependencies...${NC}"
+# 1. System Dependencies
+echo -e "${Y}[1/4] Memeriksa & Menginstal Dependensi Sistem...${N}"
 if command -v pkg &> /dev/null; then
-    # Termux environment
-    echo -e "${GREEN}Termux detected. Updating packages...${NC}"
+    echo -e "${G}Lingkungan Termux terdeteksi. Memperbarui paket...${N}"
     pkg update -y
     pkg install -y nodejs git build-essential sqlite
 elif command -v apt-get &> /dev/null; then
-    # Ubuntu/Debian environment
-    echo -e "${GREEN}Debian/Ubuntu detected. Updating packages...${NC}"
+    echo -e "${G}Ubuntu/Debian terdeteksi. Memperbarui paket...${N}"
     sudo apt-get update -y
-    sudo apt-get install -y nodejs npm git build-essential sqlite3
+    sudo apt-get install -y nodejs npm git build-essential sqlite3 curl
+elif command -v pacman &> /dev/null; then
+    echo -e "${G}Arch Linux terdeteksi. Memperbarui paket...${N}"
+    sudo pacman -Syu --noconfirm nodejs npm git sqlite3 curl
 else
-    echo -e "${YELLOW}Could not determine package manager. Assuming Node.js and Git are already installed.${NC}"
+    echo -e "${Y}OS tidak dikenal. Diasumsikan Git & Node.js sudah terinstall.${N}"
 fi
 
-# 2. NPM Install
-echo -e "\n${YELLOW}[2/4] Installing Node.js packages...${NC}"
+# 2. Clone Repository (jika dipanggil via curl)
+echo -e "\n${Y}[2/4] Memeriksa Repositori Elynisia...${N}"
+if [ -d "Elynisia" ]; then
+    echo -e "${G}Folder Elynisia sudah ada. Masuk ke folder...${N}"
+    cd Elynisia
+elif [ -f "package.json" ] && grep -q "elynisia" "package.json"; then
+    echo -e "${G}Sudah berada di dalam folder proyek Elynisia.${N}"
+else
+    echo -e "${C}Mengunduh source code Elynisia dari GitHub...${N}"
+    # Ganti URL ini dengan URL repo aslimu nanti
+    git clone https://github.com/your-username/Elynisia.git || { echo -e "${R}Gagal clone repository!${N}"; exit 1; }
+    cd Elynisia
+fi
+
+# 3. NPM Install
+echo -e "\n${Y}[3/4] Menginstal modul Node.js (Microservices)...${N}"
 npm install
 
-# 3. Environment Setup
-echo -e "\n${YELLOW}[3/4] Setting up environment variables (.env)...${NC}"
-if [ ! -f .env ]; then
-    cp .env.example .env 2>/dev/null || touch .env
-    
-    echo -e "${CYAN}Let's configure your bot!${NC}"
-    
-    read -p "Enter your Telegram Bot Token (from @BotFather): " BOT_TOKEN
-    read -p "Enter your Telegram User ID (Owner ID): " OWNER_ID
-    read -p "Enter your Gemini API Key (from Google AI Studio): " GEMINI_API
-    
-    # Overwrite .env with user inputs
-    cat > .env <<EOL
-# Elynisia Bot Environment Configuration
-
-TELEGRAM_TOKEN_BOT=$BOT_TOKEN
-OWNER_ID=$OWNER_ID
-TELEGRAM_ALLOWED_IDS=$OWNER_ID
-
-MODEL_PROVIDER=gemini
-MODEL_API=$GEMINI_API
-MODEL_NAME=gemini-2.5-flash
-EOL
-    echo -e "${GREEN}.env file created successfully!${NC}"
-else
-    echo -e "${GREEN}.env file already exists. Skipping configuration.${NC}"
-fi
-
-# 4. Finalizing
-echo -e "\n${YELLOW}[4/4] Finalizing setup...${NC}"
-chmod +x install.sh
-echo -e "${GREEN}Setup Complete!${NC}"
-echo -e "${CYAN}=================================================${NC}"
-echo -e "${CYAN} To start the bot, run:                          ${NC}"
-echo -e "${GREEN}      npm start                                  ${NC}"
-echo -e "${CYAN} or:                                             ${NC}"
-echo -e "${GREEN}      node index.js                              ${NC}"
-echo -e "${CYAN}=================================================${NC}"
+# 4. Selesai
+echo -e "\n${Y}[4/4] Finalisasi...${N}"
+echo -e "${G}Instalasi Selesai!${N}"
+echo -e "${C}=================================================${N}"
+echo -e "${C} Untuk memulai Setup Interaktif, ketik:          ${N}"
+echo -e "${G}      cd Elynisia && npm start                   ${N}"
+echo -e "${C}=================================================${N}"

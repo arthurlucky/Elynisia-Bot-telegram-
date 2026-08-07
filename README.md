@@ -79,18 +79,35 @@ Built-in `prom-client` exposes real-time metrics at `/metrics` (Port 3000). Easi
 - 2GB RAM minimum (4GB recommended for Global AI processing)
 - Linux (Ubuntu/Debian), Windows, or Termux (Android ARM64)
 
-### 1. Clone & Install
-```bash
-git clone https://github.com/your-username/Elynisia.git
-cd Elynisia
-npm install
-```
+### 📦 Installation & Setup
 
-### 2. Interactive Setup Wizard
-Start the platform using the built-in wizard:
-```bash
-npm start
-```
+1. **Install via One-Liner (Mac/Linux/Termux)**
+   ```bash
+   curl -sL https://raw.githubusercontent.com/arthurlucky/Elynisia-Bot-telegram-/main/install.sh | bash
+   ```
+
+2. **Global CLI (Optional but Recommended)**
+   Setelah install, tautkan CLI ke sistem secara global:
+   ```bash
+   cd Elynisia
+   npm link
+   ```
+   Sekarang kamu bisa menggunakan perintah `elynisia` di mana saja!
+
+3. **Start the Setup Wizard**
+   Jalankan Setup Wizard interaktif:
+   ```bash
+   elynisia setup
+   # Atau jika tidak di-link: npm start
+   ```
+
+### ⌨️ CLI Commands Reference
+- `elynisia setup` : Menjalankan wizard inisialisasi AI, Port, dan Token Telegram.
+- `elynisia reset` : **[DANGER]** Menghapus seluruh file konfigurasi (`.env`) dan Database SQLite (`memory/`).
+- `elynisia status` : Melihat metrik *runtime*, memori, jumlah file, dan PID aktif.
+- `elynisia userlist` : Melihat seluruh pengguna yang menggunakan bot.
+- `elynisia rolemanager <uid> <role>` : Mengganti pangkat pengguna secara manual.
+
 The console will prompt you to select the runtime mode:
 ```text
 =========================================

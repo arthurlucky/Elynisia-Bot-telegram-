@@ -1,4 +1,4 @@
-#!/data/data/com.termux/files/usr/bin/env node
+#!/usr/bin/env node
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -71,11 +71,49 @@ async function runCommand(cmdLine, isInteractive = false) {
     console.log("\n==========================================");
     console.log("            ELYNISIA CLI HELP");
     console.log("==========================================");
+    console.log("/setup                - Mulai Setup Wizard (Inisialisasi Server)");
+    console.log("/reset                - Hapus semua konfigurasi & database (!Bahaya)");
     console.log("/userlist             - List all registered bot users");
     console.log("/rolemanager <uid> <role> - Manage/update user roles");
     console.log("/status               - View runtime, uptime & database stats");
     console.log("/exit                 - Exit the CLI tool");
     console.log("==========================================\n");
+  }
+
+  else if (cmd === "setup") {
+    console.log("🚀 Menjalankan Setup Wizard Elynisia...");
+    // Jalankan index.js melalui child process agar dapat berinteraksi dengan Inquirer
+    const { spawn } = await import("child_process");
+    const setupProc = spawn("node", [path.join(__dirname, "index.js")], { stdio: "inherit" });
+    await new Promise(resolve => setupProc.on("close", resolve));
+  }
+
+  else if (cmd === "reset") {
+    const { default: inquirer } = await import("inquirer");
+    const { confirm } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "confirm",
+        message: "⚠️ PERINGATAN: Ini akan menghapus file .env dan seluruh Database SQLite (memory/). Lanjutkan?",
+        default: false
+      }
+    ]);
+    if (confirm) {
+      try {
+        const envFile = path.join(__dirname, ".env");
+        if (fs.existsSync(envFile)) fs.unlinkSync(envFile);
+        
+        const memoryDir = path.join(__dirname, "memory");
+        if (fs.existsSync(memoryDir)) {
+           fs.rmSync(memoryDir, { recursive: true, force: true });
+        }
+        console.log("✅ Sistem berhasil di-reset sepenuhnya!");
+      } catch(err) {
+        console.error("❌ Gagal melakukan reset:", err.message);
+      }
+    } else {
+      console.log("Dibatalkan.");
+    }
   }
 
   else if (cmd === "userlist") {

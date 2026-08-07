@@ -8,7 +8,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { getGlobalDB, SQLiteDB } from "../../client/core/db.js";
 import { registry } from "./registry.js";
-import { eventBus } from "../../client/utils/eventBus.js";
+import { eventBus } from "./eventBus.js";
 
 import { getUserWorkspaceRoot } from "../../client/utils/container.js";
 

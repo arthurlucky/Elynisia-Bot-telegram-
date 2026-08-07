@@ -1,4 +1,4 @@
-import { eventBus } from "../../client/utils/eventBus.js";
+import { eventBus } from "./eventBus.js";
 import { zodToJsonSchema } from "zod-to-json-schema";
 
 class Registry {

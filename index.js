@@ -45,19 +45,29 @@ function writeEnv(config) {
 
 async function askSetupWizard() {
   const currentConfig = readEnv();
-  if (currentConfig.APP_MODE && currentConfig.PORT) {
-    return { mode: currentConfig.APP_MODE, port: currentConfig.PORT };
+  
+  // Periksa kelengkapan konfigurasi saat ini
+  const hasBase = currentConfig.APP_MODE && currentConfig.PORT;
+  const hasGlobal = hasBase && currentConfig.TELEGRAM_TOKEN_BOT && currentConfig.MODEL_API;
+  const hasServer = hasBase && currentConfig.MODEL_API;
+  const hasClient = hasBase && currentConfig.TELEGRAM_TOKEN_BOT;
+  
+  if ((currentConfig.APP_MODE === "global" && hasGlobal) ||
+      (currentConfig.APP_MODE === "server" && hasServer) ||
+      (currentConfig.APP_MODE === "client" && hasClient)) {
+    return currentConfig;
   }
   
   printBanner();
   
-  const answers = await inquirer.prompt([
+  const baseAnswers = await inquirer.prompt([
     {
       type: "select",
       name: "mode",
       message: "🚀 Pilih arsitektur sistem yang ingin dijalankan:",
+      when: () => !currentConfig.APP_MODE,
       choices: [
-        { name: "🌍 Global Mode (Jalankan Client + Server bersaman)", value: "global" },
+        { name: "🌍 Global Mode (Jalankan Client + Server bersamaan)", value: "global" },
         { name: "🖥️  Server Only (Private AI Backend murni)", value: "server" },
         { name: "📱 Client Only (Gateway Telegram murni)", value: "client" }
       ]
@@ -66,26 +76,86 @@ async function askSetupWizard() {
       type: "input",
       name: "port",
       message: "🔌 Tentukan Port untuk REST API (Default 3000):",
-      default: "3000",
+      default: currentConfig.PORT || "3000",
       validate: (input) => !isNaN(input) || "Port harus berupa angka!"
     }
   ]);
   
-  const spinner = ora("Menyimpan konfigurasi server...").start();
+  const mode = currentConfig.APP_MODE || baseAnswers.mode;
+  currentConfig.APP_MODE = mode;
+  currentConfig.PORT = baseAnswers.port;
+
+  const credentialsPrompt = [];
+
+  // Jika Server / Global, butuh Model API
+  if (mode === "global" || mode === "server") {
+    if (!currentConfig.MODEL_PROVIDER) {
+      credentialsPrompt.push({
+        type: "select",
+        name: "provider",
+        message: "🧠 Pilih Provider AI Utama:",
+        choices: ["gemini", "openai", "anthropic", "groq", "deepseek", "ollama", "openrouter"]
+      });
+    }
+    if (!currentConfig.MODEL_API) {
+      credentialsPrompt.push({
+        type: "password",
+        name: "modelApi",
+        message: "🔑 Masukkan API Key Provider AI (Disembunyikan):",
+        mask: "*"
+      });
+    }
+  }
+
+  // Jika Client / Global, butuh Telegram Token
+  if (mode === "global" || mode === "client") {
+    if (!currentConfig.TELEGRAM_TOKEN_BOT) {
+      credentialsPrompt.push({
+        type: "password",
+        name: "botToken",
+        message: "🤖 Masukkan Token Bot Telegram (dari @BotFather):",
+        mask: "*"
+      });
+    }
+    if (!currentConfig.OWNER_ID) {
+      credentialsPrompt.push({
+        type: "input",
+        name: "ownerId",
+        message: "👑 Masukkan Telegram ID Kamu (Sebagai CEO/Owner):",
+        validate: (input) => !isNaN(input) || "ID harus berupa angka!"
+      });
+    }
+  }
+
+  if (credentialsPrompt.length > 0) {
+    const credAnswers = await inquirer.prompt(credentialsPrompt);
+    if (credAnswers.provider) currentConfig.MODEL_PROVIDER = credAnswers.provider;
+    if (credAnswers.modelApi) currentConfig.MODEL_API = credAnswers.modelApi;
+    if (credAnswers.botToken) currentConfig.TELEGRAM_TOKEN_BOT = credAnswers.botToken;
+    if (credAnswers.ownerId) {
+      currentConfig.OWNER_ID = credAnswers.ownerId;
+      currentConfig.TELEGRAM_ALLOWED_IDS = credAnswers.ownerId; // Default allowed ID
+    }
+  }
   
-  currentConfig.APP_MODE = answers.mode;
-  currentConfig.PORT = answers.port;
+  const spinner = ora("Menyimpan konfigurasi server...").start();
   writeEnv(currentConfig);
   
   setTimeout(() => {
     spinner.succeed("Konfigurasi berhasil disimpan ke .env!");
   }, 1000);
   
-  return { mode: answers.mode, port: answers.port };
+  // Karena setTimeout asinkron dan return langsung jalan,
+  // lebih baik kita Promise-kan delay ini agar rapih (meski sebelumnya tak masalah)
+  await new Promise(r => setTimeout(r, 1200));
+  
+  return currentConfig;
 }
 
 async function main() {
-  const { mode, port } = await askSetupWizard();
+  const config = await askSetupWizard();
+  const mode = config.APP_MODE;
+  const port = config.PORT;
   
   console.log("\n\x1b[36m⚡ Memulai Inisialisasi Sistem...\x1b[0m");
   const hasClient = fs.existsSync(path.join(__dirname, "client"));

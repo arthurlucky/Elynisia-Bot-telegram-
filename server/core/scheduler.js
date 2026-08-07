@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getUserDB } from "../../client/core/db.js";
-import { eventBus } from "../../client/utils/eventBus.js";
+import { eventBus } from "./eventBus.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

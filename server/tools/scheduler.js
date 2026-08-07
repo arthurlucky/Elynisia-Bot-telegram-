@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { DynamicStructuredTool } from "@langchain/core/tools";
-import { eventBus } from "../../client/utils/eventBus.js";
+import { eventBus } from "../core/eventBus.js";
 
 const activeJobs = {};
 

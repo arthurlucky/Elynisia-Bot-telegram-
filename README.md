@@ -32,14 +32,14 @@ Elynisia's codebase is strictly divided into two primary domains to ensure secur
 
 ```mermaid
 graph TD
-    subgraph Client [Client Gateway (Telegram & Logic)]
+    subgraph Client ["Client Gateway (Telegram & Logic)"]
         TG[Telegram Bot UI]
         DB[(PostgreSQL / SQLite)]
         ECON[Economy & Token System]
         PAY[Payment Gateway / QRIS]
     end
 
-    subgraph Server [Global / Private AI Backend]
+    subgraph Server ["Global / Private AI Backend"]
         AGENT[LangChain Agent Engine]
         RAG[Pure-JS TF-IDF RAG Memory]
         MCP[Model Context Protocol]

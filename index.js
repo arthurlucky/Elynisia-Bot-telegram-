@@ -53,7 +53,7 @@ async function askSetupWizard() {
   
   const answers = await inquirer.prompt([
     {
-      type: "list",
+      type: "select",
       name: "mode",
       message: "🚀 Pilih arsitektur sistem yang ingin dijalankan:",
       choices: [
